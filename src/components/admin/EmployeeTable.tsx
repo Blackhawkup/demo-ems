@@ -13,7 +13,8 @@ import {
   Briefcase, 
   UserCheck,
   Building2,
-  ExternalLink
+  ExternalLink,
+  Sparkles
 } from 'lucide-react';
 
 interface EmployeeTableProps {
@@ -201,10 +202,11 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
                       <button
                         type="button"
                         onClick={() => onSelectEmployee(emp)}
-                        className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="View Employee Profile"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 text-slate-700 hover:text-[#094897] hover:bg-blue-50 border border-slate-200 rounded-lg text-xs font-semibold transition-colors shadow-2xs"
+                        title="View Employee Profile & AI Analysis"
                       >
-                        <Eye className="w-4 h-4" />
+                        <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                        <span className="hidden sm:inline">Tasks & AI</span>
                       </button>
 
                       {!isLead && (
