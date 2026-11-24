@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useEMS } from '../../context/EMSContext';
 import { Employee } from '../../types';
 import { AlertTriangle, X, Trash2 } from 'lucide-react';
@@ -26,14 +27,14 @@ export const RemoveEmployeeDialog: React.FC<RemoveEmployeeDialogProps> = ({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [employee, onClose]);
 
-  if (!employee) return null;
+  if (!employee || typeof document === 'undefined') return null;
 
   const handleConfirm = () => {
     removeEmployee(employee.id);
     onClose();
   };
 
-  return (
+  return createPortal(
     <div 
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs transition-opacity duration-150"
       onClick={(e) => {
@@ -41,7 +42,7 @@ export const RemoveEmployeeDialog: React.FC<RemoveEmployeeDialogProps> = ({
       }}
     >
       <div 
-        className="bg-white rounded-3xl max-w-md w-full border border-slate-200/90 shadow-2xl overflow-hidden p-6 space-y-4"
+        className="relative bg-white rounded-3xl max-w-md w-full border border-slate-200/90 shadow-2xl overflow-hidden p-6 space-y-4 z-10"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start gap-4">
@@ -85,6 +86,7 @@ export const RemoveEmployeeDialog: React.FC<RemoveEmployeeDialogProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

@@ -98,7 +98,7 @@ export const TeamLeadDashboard: React.FC = () => {
   if (!currentUser) return null;
 
   return (
-    <div className="space-y-6 animate-fade-slide-up">
+    <div className="space-y-6 animate-fade-in">
       {/* Executive Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
         <div>

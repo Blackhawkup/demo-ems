@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useEMS } from '../../context/EMSContext';
 import { Employee, Task } from '../../types';
 import { Avatar } from '../common/Avatar';
@@ -54,7 +55,7 @@ export const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [employee, onClose]);
 
-  if (!employee) return null;
+  if (!employee || typeof document === 'undefined') return null;
 
   // Safe task list traversal with defensive null fallbacks
   const safeTasks = tasks || [];
@@ -133,7 +134,7 @@ export const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
 
   const aiData = getAiSummary();
 
-  return (
+  return createPortal(
     <div 
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs transition-opacity duration-150"
       onClick={(e) => {
@@ -141,7 +142,7 @@ export const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
       }}
     >
       <div 
-        className="bg-white rounded-3xl max-w-3xl w-full border border-slate-200/90 shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
+        className="relative bg-white rounded-3xl max-w-3xl w-full border border-slate-200/90 shadow-2xl overflow-hidden flex flex-col max-h-[92vh] z-10"
         onClick={(e) => e.stopPropagation()}
       >
 
@@ -456,6 +457,7 @@ export const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useEMS, isTaskOverdue } from '../../context/EMSContext';
 import { MemberTaskStatus, Priority } from '../../types';
 import { Badge } from '../common/Badge';
@@ -39,7 +40,7 @@ export const TaskDetailModal: React.FC = () => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isTaskDetailModalOpen, setIsTaskDetailModalOpen]);
 
-  if (!isTaskDetailModalOpen || !selectedTask) return null;
+  if (!isTaskDetailModalOpen || !selectedTask || typeof document === 'undefined') return null;
 
   const isTeamLead = currentUser?.role === 'Team Lead';
   const isCreator = currentUser?.id === selectedTask.createdBy?.id;
@@ -74,7 +75,7 @@ export const TaskDetailModal: React.FC = () => {
     updateMemberStatus(selectedTask.id, currentUser.id, nextStatus);
   };
 
-  return (
+  return createPortal(
     <div 
       className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs transition-opacity duration-150"
       onClick={(e) => {
@@ -82,7 +83,7 @@ export const TaskDetailModal: React.FC = () => {
       }}
     >
       <div 
-        className="bg-white rounded-3xl max-w-2xl w-full border border-slate-200/90 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        className="relative bg-white rounded-3xl max-w-2xl w-full border border-slate-200/90 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] z-10"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -399,6 +400,7 @@ export const TaskDetailModal: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
