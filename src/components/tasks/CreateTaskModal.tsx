@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useEMS } from '../../context/EMSContext';
 import { Priority } from '../../types';
 import { Badge } from '../common/Badge';
@@ -32,6 +32,16 @@ export const CreateTaskModal: React.FC = () => {
     return currentUser ? [currentUser.id] : [];
   });
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsCreateTaskModalOpen(false);
+    };
+    if (isCreateTaskModalOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isCreateTaskModalOpen, setIsCreateTaskModalOpen]);
 
   if (!isCreateTaskModalOpen || !currentUser) return null;
 
@@ -81,8 +91,16 @@ export const CreateTaskModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="bg-white rounded-3xl max-w-xl w-full border border-slate-200/90 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs transition-opacity duration-150"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) setIsCreateTaskModalOpen(false);
+      }}
+    >
+      <div 
+        className="bg-white rounded-3xl max-w-xl w-full border border-slate-200/90 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Modal Header */}
         <div className="p-5 sm:p-6 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-3">

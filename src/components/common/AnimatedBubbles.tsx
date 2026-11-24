@@ -189,3 +189,5 @@ export const AnimatedBubbles: React.FC<AnimatedBubblesProps> = ({
     </div>
   );
 };
+
+export default AnimatedBubbles;

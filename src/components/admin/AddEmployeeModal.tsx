@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useEMS } from '../../context/EMSContext';
 import { 
   X, 
@@ -25,6 +25,17 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onCl
   const [role, setRole] = useState<'Banker' | 'Analyst'>('Analyst');
   const [department, setDepartment] = useState('');
   const [error, setError] = useState<string | null>(null);
+
+  // Close modal on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -60,23 +71,31 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onCl
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="bg-white rounded-2xl max-w-md w-full border border-slate-200 shadow-2xl overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs transition-opacity duration-150"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div 
+        className="bg-white rounded-3xl max-w-md w-full border border-slate-200/90 shadow-2xl overflow-hidden flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header in Client Associates Corporate Navy */}
+        <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-indigo-50 text-indigo-600">
+            <div className="p-2.5 rounded-2xl bg-blue-50 text-[#094897]">
               <UserPlus className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-900">Add New Employee</h3>
+              <h3 className="text-base font-bold text-slate-900">Add New Team Member</h3>
               <p className="text-xs text-slate-500">Create employee profile and login credentials</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -107,7 +126,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onCl
                 }}
                 placeholder="e.g. Gaurav Kapoor"
                 required
-                className="w-full pl-10 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full pl-10 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#094897] focus:outline-none"
               />
             </div>
           </div>
@@ -128,10 +147,10 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onCl
                 }}
                 placeholder="gaurav"
                 required
-                className="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono text-xs"
+                className="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#094897] focus:outline-none font-mono text-xs"
               />
             </div>
-            <p className="text-[11px] text-slate-400">Unique login identifier</p>
+            <p className="text-[11px] text-slate-400">Unique login identifier (used with password 1234)</p>
           </div>
 
           {/* Role selector */}
@@ -145,7 +164,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onCl
                 onClick={() => setRole('Analyst')}
                 className={`py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition-all ${
                   role === 'Analyst'
-                    ? 'bg-emerald-50 border-emerald-300 text-emerald-800 shadow-2xs'
+                    ? 'bg-emerald-50 border-emerald-300 text-emerald-800 shadow-2xs font-bold'
                     : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                 }`}
               >
@@ -156,7 +175,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onCl
                 onClick={() => setRole('Banker')}
                 className={`py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition-all ${
                   role === 'Banker'
-                    ? 'bg-sky-50 border-sky-300 text-sky-800 shadow-2xs'
+                    ? 'bg-sky-50 border-sky-300 text-sky-800 shadow-2xs font-bold'
                     : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                 }`}
               >
@@ -177,7 +196,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onCl
                 value={department}
                 onChange={(e) => setDepartment(e.target.value)}
                 placeholder={role === 'Banker' ? 'Private Banking & Wealth' : 'Equity Research & Valuation'}
-                className="w-full pl-10 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full pl-10 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#094897] focus:outline-none"
               />
             </div>
           </div>
@@ -194,7 +213,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onCl
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="1234"
-                className="w-full pl-10 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono text-xs"
+                className="w-full pl-10 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#094897] focus:outline-none font-mono text-xs"
               />
             </div>
             <p className="text-[11px] text-slate-400">Demo password defaults to 1234</p>
@@ -205,13 +224,13 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onCl
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
+              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition-colors"
+              className="px-4 py-2 text-xs font-bold text-white bg-[#094897] hover:bg-[#073673] rounded-xl shadow-xs transition-colors"
             >
               Save & Authorize Login
             </button>
@@ -221,3 +240,4 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onCl
     </div>
   );
 };
+

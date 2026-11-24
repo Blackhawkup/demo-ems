@@ -27,21 +27,31 @@ export const PRIORITY_WEIGHT: Record<Priority, number> = {
 };
 
 export const sortTasksByPriority = (tasks: Task[]): Task[] => {
-  return [...tasks].sort((a, b) => {
-    const pDiff = PRIORITY_WEIGHT[a.priority] - PRIORITY_WEIGHT[b.priority];
+  return [...(tasks || [])].sort((a, b) => {
+    const aWeight = PRIORITY_WEIGHT[a?.priority] || 4;
+    const bWeight = PRIORITY_WEIGHT[b?.priority] || 4;
+    const pDiff = aWeight - bWeight;
     if (pDiff !== 0) return pDiff;
     // secondary sort by deadline
-    return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+    const aTime = a?.deadline ? new Date(a.deadline).getTime() : 0;
+    const bTime = b?.deadline ? new Date(b.deadline).getTime() : 0;
+    return aTime - bTime;
   });
 };
 
 export const isTaskOverdue = (task: Task): boolean => {
+  if (!task || !task.deadline) return false;
   if (task.status === 'Completed') return false;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const taskDeadline = new Date(task.deadline);
-  taskDeadline.setHours(0, 0, 0, 0);
-  return taskDeadline.getTime() < today.getTime();
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const taskDeadline = new Date(task.deadline);
+    if (isNaN(taskDeadline.getTime())) return false;
+    taskDeadline.setHours(0, 0, 0, 0);
+    return taskDeadline.getTime() < today.getTime();
+  } catch {
+    return false;
+  }
 };
 
 interface ReminderModalData {

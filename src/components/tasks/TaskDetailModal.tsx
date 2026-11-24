@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useEMS, isTaskOverdue } from '../../context/EMSContext';
 import { MemberTaskStatus, Priority } from '../../types';
 import { Badge } from '../common/Badge';
@@ -29,19 +29,29 @@ export const TaskDetailModal: React.FC = () => {
 
   const [confirmDelete, setConfirmDelete] = useState(false);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsTaskDetailModalOpen(false);
+    };
+    if (isTaskDetailModalOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isTaskDetailModalOpen, setIsTaskDetailModalOpen]);
+
   if (!isTaskDetailModalOpen || !selectedTask) return null;
 
   const isTeamLead = currentUser?.role === 'Team Lead';
-  const isCreator = currentUser?.id === selectedTask.createdBy.id;
+  const isCreator = currentUser?.id === selectedTask.createdBy?.id;
   const overdue = isTaskOverdue(selectedTask);
 
   // Check current user's assignment
   const myAssignment = currentUser 
-    ? selectedTask.assignedMembers.find((m) => m.employeeId === currentUser.id)
+    ? (selectedTask.assignedMembers || []).find((m) => m?.employeeId === currentUser.id)
     : null;
 
-  const totalMembers = selectedTask.assignedMembers.length;
-  const completedCount = selectedTask.assignedMembers.filter((m) => m.status === 'Completed').length;
+  const totalMembers = selectedTask.assignedMembers?.length || 0;
+  const completedCount = (selectedTask.assignedMembers || []).filter((m) => m?.status === 'Completed').length;
   const progressPercent = totalMembers > 0 ? Math.round((completedCount / totalMembers) * 100) : 0;
 
   const formatDate = (dateStr: string) => {
@@ -65,8 +75,16 @@ export const TaskDetailModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="bg-white rounded-3xl max-w-2xl w-full border border-slate-200/90 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div 
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs transition-opacity duration-150"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) setIsTaskDetailModalOpen(false);
+      }}
+    >
+      <div 
+        className="bg-white rounded-3xl max-w-2xl w-full border border-slate-200/90 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="p-5 sm:p-6 border-b border-slate-100 flex items-start justify-between gap-4">
           <div className="space-y-2 flex-1 min-w-0">

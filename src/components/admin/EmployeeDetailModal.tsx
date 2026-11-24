@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useEMS } from '../../context/EMSContext';
 import { Employee, Task } from '../../types';
 import { Avatar } from '../common/Avatar';
@@ -36,16 +36,35 @@ export const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
   const [showAiAnalysis, setShowAiAnalysis] = useState(false);
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
 
+  // Reset local state when selected employee changes
+  useEffect(() => {
+    setShowAiAnalysis(false);
+    setIsGeneratingAi(false);
+    setTaskViewTab('all');
+  }, [employee?.id]);
+
+  // Close on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    if (employee) {
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [employee, onClose]);
+
   if (!employee) return null;
 
-  // Find all tasks assigned to this employee
-  const assignedTasks = tasks.filter((t) =>
-    t.assignedMembers.some((m) => m.employeeId === employee.id)
+  // Safe task list traversal with defensive null fallbacks
+  const safeTasks = tasks || [];
+  const assignedTasks = safeTasks.filter((t) =>
+    (t?.assignedMembers || []).some((m) => m?.employeeId === employee.id)
   );
 
-  const activeTasks = assignedTasks.filter((t) => t.status === 'Active');
-  const completedTasks = assignedTasks.filter((t) => t.status === 'Completed');
-  const criticalTasks = activeTasks.filter((t) => t.priority === 'Critical' || t.priority === 'High');
+  const activeTasks = assignedTasks.filter((t) => t?.status === 'Active');
+  const completedTasks = assignedTasks.filter((t) => t?.status === 'Completed');
+  const criticalTasks = activeTasks.filter((t) => t?.priority === 'Critical' || t?.priority === 'High');
 
   const completionRate = assignedTasks.length > 0
     ? Math.round((completedTasks.length / assignedTasks.length) * 100)
@@ -54,7 +73,7 @@ export const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
   // Calculate total AUM exposure under this employee's active mandates
   const aumValues = activeTasks
     .map((t) => {
-      const match = t.value?.match(/₹(\d+)/);
+      const match = t?.value?.match(/₹(\d+)/);
       return match ? parseInt(match[1], 10) : 50;
     });
   const totalAumCr = aumValues.length > 0 ? aumValues.reduce((a, b) => a + b, 0) : 125;
@@ -73,7 +92,7 @@ export const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
     setTimeout(() => {
       setIsGeneratingAi(false);
       setShowAiAnalysis(true);
-    }, 450);
+    }, 350);
   };
 
   const displayedTasks = 
@@ -115,8 +134,17 @@ export const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
   const aiData = getAiSummary();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="bg-white rounded-3xl max-w-3xl w-full border border-slate-200/90 shadow-2xl overflow-hidden flex flex-col max-h-[92vh] animate-fade-slide-up">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs transition-opacity duration-150"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div 
+        className="bg-white rounded-3xl max-w-3xl w-full border border-slate-200/90 shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
+        onClick={(e) => e.stopPropagation()}
+      >
+
         
         {/* Header Profile Banner in Client Associates Corporate Navy */}
         <div className="p-6 bg-gradient-to-r from-[#031a34] via-[#094897] to-[#011226] text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden">
@@ -359,7 +387,7 @@ export const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
             ) : (
               <div className="divide-y divide-slate-100 border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-2xs">
                 {displayedTasks.map((t) => {
-                  const myAssignment = t.assignedMembers.find((m) => m.employeeId === employee.id);
+                  const myAssignment = (t?.assignedMembers || []).find((m) => m?.employeeId === employee.id);
 
                   return (
                     <div

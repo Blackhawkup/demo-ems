@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useEMS } from '../../context/EMSContext';
 import { Employee } from '../../types';
 import { AlertTriangle, X, Trash2 } from 'lucide-react';
@@ -16,6 +16,16 @@ export const RemoveEmployeeDialog: React.FC<RemoveEmployeeDialogProps> = ({
 }) => {
   const { removeEmployee } = useEMS();
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    if (employee) {
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [employee, onClose]);
+
   if (!employee) return null;
 
   const handleConfirm = () => {
@@ -24,10 +34,18 @@ export const RemoveEmployeeDialog: React.FC<RemoveEmployeeDialogProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="bg-white rounded-2xl max-w-md w-full border border-slate-200 shadow-2xl overflow-hidden p-6 space-y-4">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs transition-opacity duration-150"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div 
+        className="bg-white rounded-3xl max-w-md w-full border border-slate-200/90 shadow-2xl overflow-hidden p-6 space-y-4"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-start gap-4">
-          <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100">
+          <div className="w-10 h-10 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100">
             <AlertTriangle className="w-5 h-5" />
           </div>
           <div className="space-y-1">
@@ -38,9 +56,9 @@ export const RemoveEmployeeDialog: React.FC<RemoveEmployeeDialogProps> = ({
           </div>
         </div>
 
-        <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+        <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Avatar name={employee.name} size="sm" />
+            <Avatar name={employee.name} size="sm" avatarBg={employee.avatarBg} />
             <div>
               <p className="text-xs font-bold text-slate-900">{employee.name}</p>
               <p className="text-[11px] text-slate-500 font-mono">@{employee.username}</p>

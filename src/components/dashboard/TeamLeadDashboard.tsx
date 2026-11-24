@@ -110,7 +110,7 @@ export const TeamLeadDashboard: React.FC = () => {
               Team Lead
             </span>
           </div>
-          <p className="text-xs text-slate-500 font-medium mt-0.5 animate-pulse">
+          <p className="text-xs text-slate-500 font-medium mt-0.5">
             Client Associates Multi-Family Office • Firm-Wide Team & Mandate Oversight
           </p>
         </div>
@@ -143,16 +143,23 @@ export const TeamLeadDashboard: React.FC = () => {
           title="Team Members"
           value={totalEmployees}
           icon={<Users className="w-4 h-4" />}
-          iconBg="bg-indigo-50 text-indigo-600"
-          onClick={() => setActiveTab('employees')}
+          iconBg="bg-blue-50 text-[#094897]"
+          onClick={() => {
+            const el = document.getElementById('team-members-section');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }}
         />
 
         <StatCard
           title="Active Mandates"
           value={totalActiveTasks}
           icon={<Clock className="w-4 h-4" />}
-          iconBg="bg-blue-50 text-[#094897]"
-          onClick={() => setActiveTab('tasks')}
+          iconBg="bg-sky-50 text-sky-700"
+          onClick={() => {
+            setTaskStatusFilter('Active');
+            const el = document.getElementById('organization-tasks-section');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }}
         />
 
         <StatCard
@@ -162,7 +169,11 @@ export const TeamLeadDashboard: React.FC = () => {
           iconBg="bg-emerald-50 text-emerald-600"
           badgeText={totalActiveTasks + completedTasks > 0 ? `${Math.round((completedTasks / (totalActiveTasks + completedTasks)) * 100)}%` : '0%'}
           badgeColor="bg-emerald-50 text-emerald-800 border border-emerald-200"
-          onClick={() => setActiveTab('tasks')}
+          onClick={() => {
+            setTaskStatusFilter('Completed');
+            const el = document.getElementById('organization-tasks-section');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }}
         />
 
         <StatCard
@@ -171,7 +182,12 @@ export const TeamLeadDashboard: React.FC = () => {
           icon={<AlertTriangle className="w-4 h-4" />}
           iconBg="bg-rose-50 text-rose-600"
           badgeColor="bg-rose-50 text-rose-700 border border-rose-200"
-          onClick={() => setActiveTab('tasks')}
+          onClick={() => {
+            setTaskStatusFilter('Active');
+            setTaskPriorityFilter('Critical');
+            const el = document.getElementById('organization-tasks-section');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }}
         />
       </div>
 
@@ -183,7 +199,7 @@ export const TeamLeadDashboard: React.FC = () => {
       />
 
       {/* SECTION 1: TEAM MEMBERS ROSTER & WORKLOAD (Immediately visible to Team Lead!) */}
-      <div className="space-y-3">
+      <div id="team-members-section" className="space-y-3 scroll-mt-20">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <h2 className="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
@@ -198,7 +214,7 @@ export const TeamLeadDashboard: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsAddModalOpen(true)}
-            className="text-xs font-bold text-[#094897] hover:underline flex items-center gap-1"
+            className="text-xs font-bold text-[#094897] hover:underline flex items-center gap-1 cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Add New Employee</span>
@@ -214,7 +230,7 @@ export const TeamLeadDashboard: React.FC = () => {
       </div>
 
       {/* SECTION 2: ORGANIZATION TASKS OVERSIGHT (Directly visible on the dashboard!) */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden space-y-0">
+      <div id="organization-tasks-section" className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden space-y-0 scroll-mt-20">
         <div className="p-4 sm:p-5 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <h2 className="text-base font-bold text-slate-900 tracking-tight">
@@ -271,10 +287,11 @@ export const TeamLeadDashboard: React.FC = () => {
           ) : (
             filteredTasks.map((task) => {
               const overdue = isTaskOverdue(task);
-              const totalMembers = task.assignedMembers.length;
-              const completedMembers = task.assignedMembers.filter((m) => m.status === 'Completed').length;
+              const members = task.assignedMembers || [];
+              const totalMembers = members.length;
+              const completedMembers = members.filter((m) => m?.status === 'Completed').length;
               const progressPct = totalMembers > 0 ? Math.round((completedMembers / totalMembers) * 100) : 0;
-              const primaryMember = task.assignedMembers[0];
+              const primaryMember = members[0];
 
               return (
                 <div
@@ -307,7 +324,7 @@ export const TeamLeadDashboard: React.FC = () => {
                     </h3>
 
                     <div className="flex items-center gap-4 text-xs text-slate-500 pt-0.5 flex-wrap">
-                      <span>Created by {task.createdBy.name}</span>
+                      <span>Created by {task.createdBy?.name || 'Executive Lead'}</span>
                       <span className="flex items-center gap-1 font-medium">
                         <Calendar className="w-3.5 h-3.5 text-slate-400" />
                         <span className={overdue ? 'text-rose-600 font-bold' : ''}>
@@ -341,12 +358,12 @@ export const TeamLeadDashboard: React.FC = () => {
 
                     {/* Team avatars */}
                     <div className="flex items-center -space-x-1.5" title="Assigned Team Members">
-                      {task.assignedMembers.slice(0, 3).map((m) => (
+                      {members.slice(0, 3).map((m) => (
                         <Avatar key={m.employeeId} name={m.employeeName} size="sm" />
                       ))}
-                      {task.assignedMembers.length > 3 && (
+                      {members.length > 3 && (
                         <span className="w-6 h-6 rounded-full bg-slate-100 border border-white text-[10px] font-bold text-slate-600 flex items-center justify-center">
-                          +{task.assignedMembers.length - 3}
+                          +{members.length - 3}
                         </span>
                       )}
                     </div>
